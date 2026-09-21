@@ -27,8 +27,38 @@ CHAT_TEMPLATE_SOURCE = "HuggingFaceTB/SmolLM-135M-Instruct"
 STOP_TOKENS = ["<|endoftext|>", "<|im_end|>"]
 
 
-def build_input(tokenizer, prompt, fmt, chat_template):
-    if fmt == "chatml":
+# ---------- setup ----------
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model", default="HuggingFaceTB/SmolLM2-135M")
+    parser.add_argument("--tag", required=True, help="Name for this run, e.g. 00_base_raw")
+    parser.add_argument("--format", choices=["raw", "chatml"], required=True, help="Prompt format")
+    parser.add_argument("--max-new-tokens", type=int, default=200)
+    return parser.parse_args()
+
+
+def load_model(model_name):
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForCausalLM.from_pretrained(model_name).to(device).eval()
+    return model, tokenizer
+
+
+def load_chat_template(fmt):
+    if fmt != "chatml":
+        return None
+    return AutoTokenizer.from_pretrained(CHAT_TEMPLATE_SOURCE).chat_template
+
+
+def load_prompts():
+    return json.loads(PROMPTS_FILE.read_text(encoding="utf-8"))
+
+
+# ---------- generation ----------
+
+def build_input(tokenizer, prompt, chat_template):
+    if chat_template:
         messages = [{"role": "user", "content": prompt}]
         return tokenizer.apply_chat_template(
             messages, chat_template=chat_template, tokenize=False, add_generation_prompt=True
@@ -37,55 +67,55 @@ def build_input(tokenizer, prompt, fmt, chat_template):
     return prompt + "\n"
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default="HuggingFaceTB/SmolLM2-135M")
-    parser.add_argument("--tag", required=True, help="Name for this run, e.g. 00_base_raw")
-    parser.add_argument("--format", choices=["raw", "chatml"], required=True, help="Prompt format")
-    parser.add_argument("--max-new-tokens", type=int, default=200)
-    args = parser.parse_args()
-
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    tokenizer = AutoTokenizer.from_pretrained(args.model)
-    model = AutoModelForCausalLM.from_pretrained(args.model).to(device).eval()
+def generate(model, tokenizer, text, max_new_tokens):
+    """Greedy-decode one input and report the completion and why generation stopped."""
     stop_ids = {tokenizer.convert_tokens_to_ids(t): t for t in STOP_TOKENS}
-    chat_template = AutoTokenizer.from_pretrained(CHAT_TEMPLATE_SOURCE).chat_template if args.format == "chatml" else None
+    inputs = tokenizer(text, return_tensors="pt").to(model.device)
+    with torch.no_grad():
+        # Greedy decoding keeps runs deterministic, so changes between stages come from the weights.
+        output = model.generate(
+            **inputs,
+            max_new_tokens=max_new_tokens,
+            do_sample=False,
+            eos_token_id=list(stop_ids),
+            pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id,
+        )
+    new_ids = output[0][inputs["input_ids"].shape[1]:].tolist()
 
-    prompts = json.loads(PROMPTS_FILE.read_text(encoding="utf-8"))
+    # A stop token as the last generated id means the model ended on its own; otherwise it hit the cap.
+    stop_token = stop_ids.get(new_ids[-1]) if new_ids else None
+    return {
+        "completion": tokenizer.decode(new_ids, skip_special_tokens=True),
+        "stop_reason": "eos" if stop_token else "max_new_tokens",
+        "stop_token": stop_token,
+        "num_new_tokens": len(new_ids),
+    }
+
+
+def run_prompts(model, tokenizer, prompts, chat_template, max_new_tokens):
     results = []
     for item in prompts:
-        text = build_input(tokenizer, item["prompt"], args.format, chat_template)
-        inputs = tokenizer(text, return_tensors="pt").to(device)
-        with torch.no_grad():
-            # Greedy decoding keeps runs deterministic, so changes between stages come from the weights.
-            output = model.generate(
-                **inputs,
-                max_new_tokens=args.max_new_tokens,
-                do_sample=False,
-                eos_token_id=list(stop_ids),
-                pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id,
-            )
-        new_ids = output[0][inputs["input_ids"].shape[1]:].tolist()
-        # A stop token as the last generated id means the model ended on its own; otherwise it hit the cap.
-        stop_token = stop_ids.get(new_ids[-1]) if new_ids else None
-        stop_reason = "eos" if stop_token else "max_new_tokens"
-        completion = tokenizer.decode(new_ids, skip_special_tokens=True)
-        results.append({
-            "id": item["id"],
-            "prompt": item["prompt"],
-            "input_text": text,
-            "completion": completion,
-            "stop_reason": stop_reason,
-            "stop_token": stop_token,
-            "num_new_tokens": len(new_ids),
-        })
-        print(f"\n===== {item['id']} =====\n{item['prompt']}\n----- completion ({stop_reason}, {len(new_ids)} tokens) -----\n{completion}")
+        text = build_input(tokenizer, item["prompt"], chat_template)
+        result = {"id": item["id"], "prompt": item["prompt"], "input_text": text}
+        result |= generate(model, tokenizer, text, max_new_tokens)
+        print_result(result)
+        results.append(result)
+    return results
 
-    terminated = sum(r["stop_reason"] == "eos" for r in results)
-    print(f"\nTerminated on a stop token: {terminated}/{len(results)}")
 
-    RESULTS_DIR.mkdir(exist_ok=True)
-    meta = {
+def count_terminated(results):
+    return f"{sum(r['stop_reason'] == 'eos' for r in results)}/{len(results)}"
+
+
+# ---------- output ----------
+
+def print_result(r):
+    print(f"\n===== {r['id']} =====\n{r['prompt']}")
+    print(f"----- completion ({r['stop_reason']}, {r['num_new_tokens']} tokens) -----\n{r['completion']}")
+
+
+def build_meta(args, results):
+    return {
         "tag": args.tag,
         "model": args.model,
         "format": args.format,
@@ -93,16 +123,21 @@ def main():
         "max_new_tokens": args.max_new_tokens,
         "decoding": "greedy",
         "stop_tokens": STOP_TOKENS,
-        "terminated": f"{terminated}/{len(results)}",
+        "terminated": count_terminated(results),
     }
-    out = {"meta": meta, "results": results}
-    (RESULTS_DIR / f"{args.tag}.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
 
+
+def save_json(path, meta, results):
+    out = {"meta": meta, "results": results}
+    path.write_text(json.dumps(out, indent=2), encoding="utf-8")
+
+
+def save_markdown(path, meta, results):
     lines = [
-        f"# {args.tag}",
+        f"# {meta['tag']}",
         "",
-        f"Model: `{args.model}` | format: {args.format} | greedy, {args.max_new_tokens} new tokens"
-        f" | terminated on a stop token: {terminated}/{len(results)}",
+        f"Model: `{meta['model']}` | format: {meta['format']} | greedy, {meta['max_new_tokens']} new tokens"
+        f" | terminated on a stop token: {meta['terminated']}",
         "",
     ]
     for r in results:
@@ -119,7 +154,23 @@ def main():
             "```",
             "",
         ]
-    (RESULTS_DIR / f"{args.tag}.md").write_text("\n".join(lines), encoding="utf-8")
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
+# ---------- entry point ----------
+
+def main():
+    args = parse_args()
+    model, tokenizer = load_model(args.model)
+    chat_template = load_chat_template(args.format)
+
+    results = run_prompts(model, tokenizer, load_prompts(), chat_template, args.max_new_tokens)
+    meta = build_meta(args, results)
+    print(f"\nTerminated on a stop token: {meta['terminated']}")
+
+    RESULTS_DIR.mkdir(exist_ok=True)
+    save_json(RESULTS_DIR / f"{args.tag}.json", meta, results)
+    save_markdown(RESULTS_DIR / f"{args.tag}.md", meta, results)
     print(f"\nSaved to {RESULTS_DIR / args.tag}.json/.md")
 
 

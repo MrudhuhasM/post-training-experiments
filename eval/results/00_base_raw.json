@@ -3,6 +3,7 @@
     "tag": "00_base_raw",
     "model": "HuggingFaceTB/SmolLM2-135M",
     "format": "raw",
+    "chat_template_source": null,
     "max_new_tokens": 200,
     "decoding": "greedy",
     "stop_tokens": [
