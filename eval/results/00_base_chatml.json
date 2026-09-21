@@ -3,6 +3,7 @@
     "tag": "00_base_chatml",
     "model": "HuggingFaceTB/SmolLM2-135M",
     "format": "chatml",
+    "chat_template_source": "HuggingFaceTB/SmolLM-135M-Instruct",
     "max_new_tokens": 200,
     "decoding": "greedy",
     "stop_tokens": [

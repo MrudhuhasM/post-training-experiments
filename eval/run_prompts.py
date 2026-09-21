@@ -16,19 +16,22 @@ from pathlib import Path
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from chat_format import CHATML_TEMPLATE, STOP_TOKENS
-
 EVAL_DIR = Path(__file__).parent
 PROMPTS_FILE = EVAL_DIR / "coding_prompts.json"
 RESULTS_DIR = EVAL_DIR / "results"
 
+# The chat template SFT training uses too. The base tokenizer ships without one, so every chatml run
+# borrows this one rather than the checkpoint's own, keeping the prompt bytes identical across stages.
+CHAT_TEMPLATE_SOURCE = "HuggingFaceTB/SmolLM-135M-Instruct"
+# Generation stops on either token; the stop reason records which one.
+STOP_TOKENS = ["<|endoftext|>", "<|im_end|>"]
 
-def build_input(tokenizer, prompt, fmt):
+
+def build_input(tokenizer, prompt, fmt, chat_template):
     if fmt == "chatml":
         messages = [{"role": "user", "content": prompt}]
-        # Always our template, never the checkpoint's own, so the format stays fixed across stages.
         return tokenizer.apply_chat_template(
-            messages, chat_template=CHATML_TEMPLATE, tokenize=False, add_generation_prompt=True
+            messages, chat_template=chat_template, tokenize=False, add_generation_prompt=True
         )
     # Base models have no notion of turns, so feed the raw prompt plus a newline.
     return prompt + "\n"
@@ -46,11 +49,12 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(args.model)
     model = AutoModelForCausalLM.from_pretrained(args.model).to(device).eval()
     stop_ids = {tokenizer.convert_tokens_to_ids(t): t for t in STOP_TOKENS}
+    chat_template = AutoTokenizer.from_pretrained(CHAT_TEMPLATE_SOURCE).chat_template if args.format == "chatml" else None
 
     prompts = json.loads(PROMPTS_FILE.read_text(encoding="utf-8"))
     results = []
     for item in prompts:
-        text = build_input(tokenizer, item["prompt"], args.format)
+        text = build_input(tokenizer, item["prompt"], args.format, chat_template)
         inputs = tokenizer(text, return_tensors="pt").to(device)
         with torch.no_grad():
             # Greedy decoding keeps runs deterministic, so changes between stages come from the weights.
@@ -85,6 +89,7 @@ def main():
         "tag": args.tag,
         "model": args.model,
         "format": args.format,
+        "chat_template_source": CHAT_TEMPLATE_SOURCE if args.format == "chatml" else None,
         "max_new_tokens": args.max_new_tokens,
         "decoding": "greedy",
         "stop_tokens": STOP_TOKENS,

@@ -14,10 +14,9 @@ decoding and 200 new tokens. Full outputs live in [results/](results/).
 - **B vs C** changes only the weights, so it isolates the effect of training.
 - **A vs C** shows the whole change from using a raw pretrained model to using an instruction-tuned assistant.
 
-The ChatML template is defined once in [chat_format.py](chat_format.py) and always passed explicitly, never taken from
-the checkpoint. The base tokenizer ships with no chat template at all, and an SFT checkpoint could ship a different
-one, so this keeps B and C byte-identical. **SFT training must use the same `CHATML_TEMPLATE`** (no default system
-message).
+The ChatML template is the one from `HuggingFaceTB/SmolLM-135M-Instruct` (plain ChatML, no default system message),
+which SFT training uses too. The base tokenizer ships with no chat template, so `run_prompts.py` loads this one and
+passes it explicitly on every chatml run instead of using the checkpoint's own. That keeps B and C byte-identical.
 
 ## Termination
 
