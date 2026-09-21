@@ -1,0 +1,70 @@
+{
+  "meta": {
+    "tag": "00_base_chatml",
+    "model": "HuggingFaceTB/SmolLM2-135M",
+    "format": "chatml",
+    "max_new_tokens": 200,
+    "decoding": "greedy",
+    "stop_tokens": [
+      "<|endoftext|>",
+      "<|im_end|>"
+    ],
+    "terminated": "0/6"
+  },
+  "results": [
+    {
+      "id": "reverse_string",
+      "prompt": "Write a Python function that reverses a string.",
+      "input_text": "<|im_start|>user\nWrite a Python function that reverses a string.<|im_end|>\n<|im_start|>assistant\n",
+      "completion": "Write a Python function that reverses a string.\n\n## 1.1.1.1\n\n## 1.1.1.2\n\n## 1.1.1.3\n\n## 1.1.1.4\n\n## 1.1.1.5\n\n## 1.1.1.6\n\n## 1.1.1.7\n\n## 1.1.1.8\n\n## 1.1.1.9\n\n## 1.1.1.10\n\n## 1.1.1.11\n\n## 1.1.1.12\n\n## 1.1.1.13\n\n## 1.1.1.14\n\n## 1.1.1.15\n\n## 1.1.1.16\n\n## 1.1",
+      "stop_reason": "max_new_tokens",
+      "stop_token": null,
+      "num_new_tokens": 200
+    },
+    {
+      "id": "is_prime",
+      "prompt": "Write a Python function `is_prime(n)` that returns True if n is a prime number and False otherwise.",
+      "input_text": "<|im_start|>user\nWrite a Python function `is_prime(n)` that returns True if n is a prime number and False otherwise.<|im_end|>\n<|im_start|>assistant\n",
+      "completion": "Write a Python function `is_prime(n)` that returns True if n is a prime number and False otherwise.\n\n## 1.1.1.1\n\nThe following Python code shows how to use the `is_prime` function.\n\n```\nimport math\n\ndef is_prime(n):\n    if n == 1:\n        return False\n    if n == 2:\n        return True\n    if n % 2 == 0:\n        return False\n    for i in range(3, int(math.sqrt(n))+1, 2):\n        if n % i == 0:\n            return False\n    return True\n```\n\n## 1.1.2.1\n\nThe following Python code shows how to use the `is_prime` function.\n\n```\nimport math\n\ndef is_prime(n):\n    if n == 1:\n        return False\n    if n == 2",
+      "stop_reason": "max_new_tokens",
+      "stop_token": null,
+      "num_new_tokens": 200
+    },
+    {
+      "id": "fizzbuzz",
+      "prompt": "Write a Python program that prints the numbers from 1 to 15. For multiples of 3 print \"Fizz\", for multiples of 5 print \"Buzz\", and for multiples of both print \"FizzBuzz\".",
+      "input_text": "<|im_start|>user\nWrite a Python program that prints the numbers from 1 to 15. For multiples of 3 print \"Fizz\", for multiples of 5 print \"Buzz\", and for multiples of both print \"FizzBuzz\".<|im_end|>\n<|im_start|>assistant\n",
+      "completion": "Write a Python program that prints the numbers from 1 to 100. For multiples of 3 print \"Fizz\", for multiples of 5 print \"Buzz\", and for multiples of both print \"FizzBuzz\".\n\n## 1.1.1.1\n\nWrite a Python program that prints the numbers from 1 to 100. For multiples of 3 print \"Fizz\", for multiples of 5 print \"Buzz\", and for multiples of both print \"FizzBuzz\".\n\n## 1.1.1.2\n\nWrite a Python program that prints the numbers from 1 to 100. For multiples of 3 print \"Fizz\", for multiples of 5 print \"Buzz\", and for multiples of both print \"FizzBuzz\".\n\n## 1.1.1.3\n\nWrite a Python program that prints the numbers from 1 to 1",
+      "stop_reason": "max_new_tokens",
+      "stop_token": null,
+      "num_new_tokens": 200
+    },
+    {
+      "id": "list_vs_tuple",
+      "prompt": "Explain the difference between a list and a tuple in Python.",
+      "input_text": "<|im_start|>user\nExplain the difference between a list and a tuple in Python.<|im_end|>\n<|im_start|>assistant\n",
+      "completion": "Explain the difference between a list and a tuple in Python.\n\n## 1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1.",
+      "stop_reason": "max_new_tokens",
+      "stop_token": null,
+      "num_new_tokens": 200
+    },
+    {
+      "id": "fix_bug",
+      "prompt": "Fix the bug in this Python function:\n\ndef average(nums):\n    return sum(nums) / len(nums) + 1",
+      "input_text": "<|im_start|>user\nFix the bug in this Python function:\n\ndef average(nums):\n    return sum(nums) / len(nums) + 1<|im_end|>\n<|im_start|>assistant\n",
+      "completion": "\nThe average of the numbers in the list is 1.\n\nThe average of the numbers in the list is 1.\n\nThe average of the numbers in the list is 1.\n\nThe average of the numbers in the list is 1.\n\nThe average of the numbers in the list is 1.\n\nThe average of the numbers in the list is 1.\n\nThe average of the numbers in the list is 1.\n\nThe average of the numbers in the list is 1.\n\nThe average of the numbers in the list is 1.\n\nThe average of the numbers in the list is 1.\n\nThe average of the numbers in the list is 1.\n\nThe average of the numbers in the list is 1.\n\nThe average of the numbers in the list is 1.\n\nThe average of the numbers in the list is 1.\n\nThe average of",
+      "stop_reason": "max_new_tokens",
+      "stop_token": null,
+      "num_new_tokens": 200
+    },
+    {
+      "id": "binary_search",
+      "prompt": "Write a Python function that performs binary search on a sorted list and returns the index of the target, or -1 if it is not found.",
+      "input_text": "<|im_start|>user\nWrite a Python function that performs binary search on a sorted list and returns the index of the target, or -1 if it is not found.<|im_end|>\n<|im_start|>assistant\n",
+      "completion": "Write a Python function that performs binary search on a sorted list and returns the index of the target, or -1 if it is not found.\n\n## 1.1.1.1\n\nThe following code snippet demonstrates how to use the Python library for binary search.\n\n```\nimport numpy as np\n\ndef binary_search(arr, target):\n    \"\"\"\n    Given an array of integers, return the index of the target.\n    \"\"\"\n    # Initialize the index variable to -1\n    index = -1\n\n    # Loop through the array\n    for i in range(len(arr)):\n        # If the element is greater than the target, return the index of the target\n        if arr[i] > target:\n            # If the element is less than the target, return the index of the target\n            if arr[i] < target:\n                # If the element is equal to the target, return the index of the target\n                if arr[i] ==",
+      "stop_reason": "max_new_tokens",
+      "stop_token": null,
+      "num_new_tokens": 200
+    }
+  ]
+}

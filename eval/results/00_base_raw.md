@@ -1,10 +1,12 @@
-# 00_base
+# 00_base_raw
 
-Model: `HuggingFaceTB/SmolLM2-135M` | chat template: False | greedy, 200 new tokens
+Model: `HuggingFaceTB/SmolLM2-135M` | format: raw | greedy, 200 new tokens | terminated on a stop token: 0/6
 
 ## reverse_string
 
 **Prompt:** Write a Python function that reverses a string.
+
+**Stopped:** max_new_tokens, 200 tokens
 
 ```
 
@@ -59,6 +61,8 @@ def reverse(s):
 
 **Prompt:** Write a Python function `is_prime(n)` that returns True if n is a prime number and False otherwise.
 
+**Stopped:** max_new_tokens, 200 tokens
+
 ```
 
 ```python
@@ -98,6 +102,8 @@ def is_prime(n):
 
 **Prompt:** Write a Python program that prints the numbers from 1 to 15. For multiples of 3 print "Fizz", for multiples of 5 print "Buzz", and for multiples of both print "FizzBuzz".
 
+**Stopped:** max_new_tokens, 200 tokens
+
 ```
 
 ## Python Program to Print Fibonacci Series
@@ -120,6 +126,8 @@ where F(n) is the first term
 ## list_vs_tuple
 
 **Prompt:** Explain the difference between a list and a tuple in Python.
+
+**Stopped:** max_new_tokens, 200 tokens
 
 ```
 
@@ -150,6 +158,8 @@ A tuple is
 
 def average(nums):
     return sum(nums) / len(nums) + 1
+
+**Stopped:** max_new_tokens, 200 tokens
 
 ```
 
@@ -192,6 +202,8 @@ def
 ## binary_search
 
 **Prompt:** Write a Python function that performs binary search on a sorted list and returns the index of the target, or -1 if it is not found.
+
+**Stopped:** max_new_tokens, 200 tokens
 
 ```
 
