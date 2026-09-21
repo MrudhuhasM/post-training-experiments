@@ -1,0 +1,26 @@
+[
+  {
+    "id": "reverse_string",
+    "prompt": "Write a Python function that reverses a string."
+  },
+  {
+    "id": "is_prime",
+    "prompt": "Write a Python function `is_prime(n)` that returns True if n is a prime number and False otherwise."
+  },
+  {
+    "id": "fizzbuzz",
+    "prompt": "Write a Python program that prints the numbers from 1 to 15. For multiples of 3 print \"Fizz\", for multiples of 5 print \"Buzz\", and for multiples of both print \"FizzBuzz\"."
+  },
+  {
+    "id": "list_vs_tuple",
+    "prompt": "Explain the difference between a list and a tuple in Python."
+  },
+  {
+    "id": "fix_bug",
+    "prompt": "Fix the bug in this Python function:\n\ndef average(nums):\n    return sum(nums) / len(nums) + 1"
+  },
+  {
+    "id": "binary_search",
+    "prompt": "Write a Python function that performs binary search on a sorted list and returns the index of the target, or -1 if it is not found."
+  }
+]
